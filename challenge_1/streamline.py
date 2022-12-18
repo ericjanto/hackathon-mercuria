@@ -1,3 +1,4 @@
+import geojson
 import json
 import numpy as np
 import os
@@ -5,9 +6,10 @@ import pandas as pd
 import re
 import requests
 
+
 from geopy.distance import geodesic
 from rich.progress import Progress
-from typing import Tuple
+from typing import List, Tuple
 
 
 class AutomatedReport:
@@ -26,12 +28,13 @@ class AutomatedReport:
             self.imo_details = fetch_vessel_details(self.imo)
             self.cbm = float(self.imo_details.cbm[0])
             print(self.cbm)
-            self.consumption = consum(
-                self.avg_velocity, self.cbm
-            )
+            self.consumption = consum(self.avg_velocity, self.cbm)
             p.advance(t)
             self.ghg = calculate_GHG(self.consumption)
             p.advance(t)
+            longs = list(map(lambda x: float(x), self.ais_hourly_df.ais_lon))
+            lats = list(map(lambda x: float(x), self.ais_hourly_df.ais_lat))
+            self.coordinates_to_geojson(longs, lats)
 
     def __str__(self):
         out = (
@@ -43,6 +46,15 @@ class AutomatedReport:
         out += f"Avg fuel consump. (tonnes/day):\t{round(self.consumption,2)}\n"
         out += f"GHG emissions (kg):\t\t{round(self.ghg,2)}\n"
         return out
+
+    def coordinates_to_geojson(
+        self, longs: List[float], lats: List[float]
+    ) -> geojson.FeatureCollection:
+        ls = geojson.LineString(list(zip(longs, lats)), validate=True)
+        ft = geojson.Feature(geometry=ls, properties={})
+        ftc = geojson.FeatureCollection([ft])
+        with open(f'geojson-{self.imo}-{self.start_date}-{self.end_date}.json', 'w') as f:
+            f.write(str(ftc))
 
 
 def get_valid_input(input_descriptor: str, pattern: str) -> str:
