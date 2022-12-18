@@ -6,7 +6,6 @@ import pandas as pd
 import re
 import requests
 
-
 from geopy.distance import geodesic
 from rich.progress import Progress
 from typing import List, Tuple
@@ -27,7 +26,6 @@ class AutomatedReport:
             p.advance(t)
             self.imo_details = fetch_vessel_details(self.imo)
             self.cbm = float(self.imo_details.cbm[0])
-            print(self.cbm)
             self.consumption = consum(self.avg_velocity, self.cbm)
             p.advance(t)
             self.ghg = calculate_GHG(self.consumption)
@@ -44,7 +42,7 @@ class AutomatedReport:
         out += f"Total distance travelled (km):\t{round(self.total_dist, 2)}\n"
         out += f"Avg velocity (km/h):\t\t{round(self.avg_velocity,2)}\n"
         out += f"Avg fuel consump. (tonnes/day):\t{round(self.consumption,2)}\n"
-        out += f"GHG emissions (kg):\t\t{round(self.ghg,2)}\n"
+        out += f"GHG emissions (kg/day):\t\t{round(self.ghg,2)}\n"
         return out
 
     def coordinates_to_geojson(
@@ -126,9 +124,10 @@ def calculate_overall_distance(df: pd.DataFrame) -> float:
     df_lon = df["ais_lon"].tolist()
     total_distance = 0
     for i in range(len(df_lat) - 1):
-        total_distance += calculate_distance(
+        d = calculate_distance(
             (df_lat[i], df_lon[i]), (df_lat[i + 1], df_lon[i + 1])
         )
+        total_distance += d
     return total_distance
 
 
@@ -149,12 +148,12 @@ def calculate_GHG(fuel_consumed: float) -> float:
 
 
 if __name__ == "__main__":
-    # imo = get_valid_input(input_descriptor="IMO: ", pattern=r'^[0-9]{7}')
-    # start_date = get_valid_input(input_descriptor="Start date: ", pattern=r'\d{4}-\d{2}-\d{2}')
-    # end_date = get_valid_input(input_descriptor="End date: ", pattern=r'\d{4}-\d{2}-\d{2}')
-    imo = 9643271
-    start_date = "2022-08-01"
-    end_date = "2022-08-30"
+    imo = get_valid_input(input_descriptor="IMO: ", pattern=r'^[0-9]{7}')
+    start_date = get_valid_input(input_descriptor="Start date: ", pattern=r'\d{4}-\d{2}-\d{2}')
+    end_date = get_valid_input(input_descriptor="End date: ", pattern=r'\d{4}-\d{2}-\d{2}')
+    # imo = 9643271
+    # start_date = "2022-08-01"
+    # end_date = "2022-08-30"
 
     report = AutomatedReport(imo, start_date, end_date)
     print(report)
