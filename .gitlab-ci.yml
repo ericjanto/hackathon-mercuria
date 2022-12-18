@@ -1,0 +1,23 @@
+stages:
+  - build
+  - test
+  - deploy
+
+include:
+  - template: Jobs/Build.gitlab-ci.yml
+  - template: Jobs/Code-Quality.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml
+
+build:
+  stage: build
+  tags:
+    - team03
+
+deploy-containers:
+ stage: deploy
+ image: docker:latest
+ script:
+ - docker-compose down
+ - docker-compose up -d
+ tags:
+   - team03
