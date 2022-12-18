@@ -1,4 +1,4 @@
-# Hackathon Info
+# Accelerating Energy Transition
 Our submission to the Mercuria Hackathon 22. The main headline of this hackathon was to find solutions for reducing carbon emissions of vessels by optimising cargo-loading and routing logistics. We utilised AIS (Automatic Identification System) data to complete this task.
 
 ## Our Solution
