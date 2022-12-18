@@ -1,0 +1,7 @@
+services:
+  frontend:
+    container_name: messenger-spacecraft-container
+    image: git.hackathon.mercuria-apps.com:5005/messenger_spacecraft/spacecraft_project/branch:latest
+    build: ./
+    ports:
+      - 3000:3000
